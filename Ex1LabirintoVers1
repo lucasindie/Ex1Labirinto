@@ -1,0 +1,230 @@
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.net.URL;
+import java.awt.event.KeyListener;
+import javax.swing.JFrame;
+import javax.swing.JPanel; 
+public class Ex1Labirinto extends JPanel implements KeyListener{
+	/*Versão 1 do meu game Ex1Labirito by /_LucasIndiesh1p*/
+	//0.definir onde o conteudo vai ser mostrado, que tipo de janela
+	public boolean JOGANDO = true;//essa variavei vai ser a chave de controle para interromper o jogo
+	public Ex1Labirinto() {
+		setSize(new Dimension(500,400));
+		setPreferredSize(new Dimension(500, 400));
+		setBackground(Color.BLACK);
+		setFocusable(true);
+		
+		addKeyListener(this);
+		
+	}
+//----1.desenhar um circulo que será o player 
+	public int player_x, player_y;
+		public void paintPlayer(Graphics g) {
+			g.setColor(Color.gray);
+			g.fillOval(player_x, player_y,20,20);
+			
+			
+
+			//limites da janela onde o player deve ser redesenhado:
+			if(player_x <= 0 )
+				player_x = 4;
+			
+			if(player_y <= 0) 
+				player_y = 4;
+			
+			if(player_x >= 480 )
+				player_x = 480;
+			
+			if(player_y >= 380) 
+				player_y = 380;
+			
+				
+		}
+		
+//----2.desenhar uma imagem que sera o mapa
+	private Image labirintoimg= null;
+	
+	
+	public Image getImage(String p)
+	{
+	Image tempImage = null;
+	try{//"tentar", colocamos isso para prevenir, caso a imagem não exista.
+	tempImage = Toolkit.getDefaultToolkit().getImage(Ex1Labirinto.class.getResource(p));
+	}
+	catch (Exception e){
+	System.out.println("Ocorreu um erro - " + e.getMessage());
+	}
+	return tempImage;
+	}
+	
+
+	public void paintTerrain(Graphics g) {
+		if(labirintoimg == null)
+			labirintoimg = getImage("labirinto.png");
+		g.drawImage(labirintoimg, 0, 0, labirintoimg.getWidth(null), labirintoimg.getHeight(null), this);//obs: é null dentro, pois não estamos passando nenhuma image "observer"
+		
+		
+	}
+	
+	
+//-----3.configurar movimentação do player e tratamento dos controles do jogo
+	@Override 
+	public void keyPressed(KeyEvent e) {
+		int tecla = e.getKeyCode();
+		if(tecla == KeyEvent.VK_A)
+			player_x -=4;
+		
+		if(tecla == KeyEvent.VK_D)
+			player_x += 4;
+		if(tecla == KeyEvent.VK_W)
+			player_y -=4;
+		
+		if(tecla == KeyEvent.VK_S)
+			player_y += 4;
+		
+	 
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+//-----4.configurar colisao nas coordenadas que representam as paredes e linha de chegada na imagem
+	private Image paredesimg = getImage("parede1_byIndiesh1pNamosca.png");
+	private Image tesouroimg = getImage("tesouro_byIndiesh1pNamosca.png");
+	private int parede1_x = 50, parede1_y = 0;
+	private int parede2_x= 150, parede2_y = 150;
+	private int parede3_x = 250, parede3_y = 250;
+	private int parede4_x = 350, parede4_y = 0;
+	private int parede5_x = 190, parede5_y = 20, parede5width = 100, parede5height = 100;
+	private int parede6_x = 315, parede6_y = 175, parede6width = 50, parede6height = 50;
+	private int tesouro_x = 420, tesouro_y = 50;
+	
+
+	public void paintObstacles(Graphics g) {
+		g.drawImage(paredesimg, parede1_x, parede1_y, paredesimg.getWidth(null), paredesimg.getHeight(null), this);
+		g.drawImage(paredesimg, parede2_x, parede2_y, paredesimg.getWidth(null), paredesimg.getHeight(null), this);
+		g.drawImage(paredesimg, parede3_x, parede3_y, paredesimg.getWidth(null), paredesimg.getHeight(null), this);
+		g.drawImage(paredesimg, parede4_x, parede4_y, paredesimg.getWidth(null), paredesimg.getHeight(null), this);
+		g.drawImage(paredesimg, parede5_x, parede5_y, parede5width, parede5height, this);
+		g.drawImage(paredesimg, parede6_x, parede6_y, parede6width, parede6height, this);
+		g.drawImage(tesouroimg, tesouro_x, tesouro_y, tesouroimg.getWidth(null), tesouroimg.getHeight(null), this);
+		
+	}
+ 	public boolean colisionWallCheck() {//método para colisão, cria os retangulos matemáticos
+		//player rectangle
+				Rectangle rectPlayer = new Rectangle(player_x, player_y,20,20); //não é um desenho e sim medidas matemáticas que representam um retangulo na tela 
+		//Obstáculos
+				Rectangle r1 = new Rectangle( parede1_x, parede1_y, paredesimg.getWidth(null),paredesimg.getHeight(null));
+				Rectangle r2 = new Rectangle( parede2_x, parede2_y, paredesimg.getWidth(null),paredesimg.getHeight(null));
+				Rectangle r3 = new Rectangle( parede3_x, parede3_y, paredesimg.getWidth(null),paredesimg.getHeight(null));
+				Rectangle r4 = new Rectangle( parede4_x, parede4_y, paredesimg.getWidth(null),paredesimg.getHeight(null));
+				Rectangle r5 = new Rectangle( parede5_x, parede5_y, parede5width, parede5height);
+				Rectangle r6 = new Rectangle( parede6_x, parede6_y, parede6width, parede6height);
+				
+
+		//Se houve colisão com paredes, tratamento:
+				
+				if (rectPlayer.intersects(r1)||rectPlayer.intersects(r2)||rectPlayer.intersects(r3)||rectPlayer.intersects(r4)||rectPlayer.intersects(r5)||rectPlayer.intersects(r6)) {
+				//System.out.print("avisa no console que colidiu");
+				return true;
+				}else
+					return false;
+ 	
+	}
+ 	public boolean colisionTreasureCheck() {
+ 		//player rectangle
+		Rectangle rectPlayer = new Rectangle(player_x, player_y,20,20); //não é um desenho e sim medidas matemáticas que representam um retangulo na tela 
+		//Tesouros:
+ 		Rectangle r7 = new Rectangle(tesouro_x, tesouro_y, tesouroimg.getWidth(null), tesouroimg.getHeight(null));
+ 		//Se houve colisão com o tesouro, objeto que é objetivo do jogo
+ 		if (rectPlayer.intersects(r7)) {
+			return true;
+			}else
+				return false;
+ 	}
+	public void showCoordinates(Graphics g) { //mostrar coordenadas
+		g.setColor(Color.white);
+		g.setFont(new Font("Century Gothic", Font.BOLD, 10));
+		g.drawString("Coordenadas_x: "+player_x, 350, 15);
+		g.setColor(Color.white);
+		g.setFont(new Font("Century Gothic", Font.BOLD, 10));
+		g.drawString("Coordenadas_y: "+player_y, 350, 30);
+			
+	}
+	
+
+
+	//5.configurar mensagem: ao colidir, e ao chegar ao ponto destino.
+	public void paintMessageDefeat(Graphics g) {
+		g.setColor(Color.white);
+		g.setFont(new Font("Century Gothic", Font.BOLD, 72));
+		g.drawString("COLISÃO ", 100, 200);
+		JOGANDO = false;
+		
+	}
+	public void paintMessageVictory(Graphics g) {
+		g.setColor(Color.white);
+		g.setFont(new Font("Century Gothic", Font.BOLD, 52));
+		g.drawString("VENCEU O JOGO", 50, 200);
+		JOGANDO = false;
+	}
+//6.configurar efeitos sonoros
+	//--Sem efeitos sonoros, ainda estou estudando o assunto.
+	
+	//fim do exercicio
+	@Override
+	public void paint(Graphics g) {//lembrando que: O método update () é conhecido como “retorno de chamada”. É chamado automaticamente pela biblioteca Swing ou awt. Assim também como o paint (), é também um retorno de chamada que o Swing (ou awt) chamará automaticamente.
+		this.setSize(500,400);
+		if(JOGANDO==true) {//essa condição é que determina se o jogo vai rodar ou não
+			
+		paintTerrain(g);
+		paintPlayer(g);//vai chamar o passo1, desenhar o player
+		paintObstacles(g); //passo4, desenha as paredes
+		showCoordinates(g);//passo4, para desenhar as coordenadas
+		if (colisionWallCheck()) { //passo 4, cria os objects retangulos(medidas matematicas, classe retangulo)e compara interseção entre os retangulos, ou seja se houve colisão e os trata.
+			paintMessageDefeat(g); 	
+		}
+		if(colisionTreasureCheck()) {
+			paintMessageVictory(g);
+		}
+		g.dispose();
+		repaint();
+		}
+		else {
+			g.dispose();
+		
+		}
+		
+	}
+	
+	public static void main(String[]args) {
+	Ex1Labirinto game = new Ex1Labirinto();
+	JFrame frame = new JFrame();
+	frame.setTitle("Ex1Labirinto");
+	frame.add(game);
+	
+	frame.pack();
+	frame.setLocationRelativeTo(null);
+	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//**isso é muito importante, para não sobrecarregar o computador, pois se vc não colocar essa linha, o programa continuará rodando mesmo fechando a janela.
+	frame.setVisible(true);
+
+	
+	}
+
+}
